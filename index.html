@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Info Explorer</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-top: 50px;
+        }
+
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        input {
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            width: 300px;
+            text-align: center;
+        }
+
+        .suggestions {
+            position: absolute;
+            background: rgba(25, 182, 54, 0.738);
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestions div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #9fa81f;
+        }
+
+        .suggestions div:hover {
+            background: #1bab13;
+        }
+
+        .animal-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+            color: black;
+            max-width: 500px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .animal-image {
+            width: 200px;
+            height: auto;
+            margin: 20px auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Animal Info Explorer</h1>
+    <div class="search-container">
+        <input type="text" id="searchBar" placeholder="Search for an animal..." autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
+    </div>
+    <div id="info" class="animal-info"></div>
+
+    <script>
+        let animalList = [
+            // A
+            "Aardvark", "Abyssinian Cat", "Acouchi", "Addax", "Adelie Penguin", "African Bush Elephant", "African Civet",
+            "African Clawed Frog", "African Forest Elephant", "African Grey Parrot", "African Wild Dog", "Ainu Dog", "Airedale Terrier",
+            "Akbash", "Akita", "Alaskan Malamute", "Albacore Tuna", "Albatross", "Alligator", "Alpaca", "Amazon River Dolphin",
+            "Amur Leopard", "Anaconda", "Angelfish", "Anglerfish", "Ant", "Anteater", "Antelope", "Ape", "Arctic Fox", "Arctic Hare",
+            "Arctic Wolf", "Armadillo", "Asian Elephant", "Asian Giant Hornet", "Asian Palm Civet", "Asiatic Black Bear", "Axolotl",
+
+            // B
+            "Babirusa", "Baboon", "Bactrian Camel", "Badger", "Baiji", "Bald Eagle", "Baleen Whale", "Ball Python", "Banana Slug",
+            "Banded Palm Civet", "Bandicoot", "Barb", "Barn Owl", "Barnacle", "Barracuda", "Barramundi", "Basilisk", "Basking Shark",
+            "Basset Hound", "Bat", "Beagle", "Bear", "Bearded Dragon", "Beaver", "Bee", "Beluga Whale", "Bengal Tiger", "Binturong",
+            "Bison", "Black Mamba", "Blobfish", "Blue Jay", "Blue Whale", "Boa Constrictor", "Bonobo", "Bongo", "Booby", "Box Turtle",
+            "Brittany Spaniel", "Bullfrog", "Bull Shark", "Butterfly",
+
+            // C
+            "Caiman", "Camel", "Canaan Dog", "Capuchin Monkey", "Caracal", "Caribou", "Cassowary", "Cat", "Caterpillar",
+            "Catfish", "Centipede", "Chameleon", "Chamois", "Cheetah", "Chickadee", "Chicken", "Chimpanzee", "Chinchilla",
+            "Chipmunk", "Clownfish", "Coati", "Cockatiel", "Cockroach", "Coral", "Cougar", "Crab", "Crane", "Crocodile", "Crow",
+
+            // D
+            "Dachshund", "Dalmatian", "Deer", "Dhole", "Dingo", "Dodo", "Dolphin", "Donkey", "Dormouse", "Dragonfly", "Duck",
+            "Dugong", "Dunker", "Dusky Dolphin", "Dwarf Crocodile",
+
+            // E
+            "Eagle", "Earthworm", "Echidna", "Eel", "Elephant", "Elephant Seal", "Elk", "Emperor Penguin", "Emu", "Ermine",
+            "Eurasian Lynx", "European Starling",
+
+            // F
+            "Falcon", "Fennec Fox", "Ferret", "Firefly", "Fish", "Fishing Cat", "Flamingo", "Flea", "Fly", "Fossa",
+            "Fox", "Frilled Lizard", "Frog", "Frogfish", "Fruit Bat", "Flying Squirrel",
+
+            // G
+            "Galapagos Tortoise", "Gar", "Gazelle", "Gecko", "Gerbil", "Giant Clam", "Giant Panda", "Giant Squid", "Gibbon",
+            "Gila Monster", "Giraffe", "Glass Frog", "Glow Worm", "Goat", "Golden Eagle", "Goose", "Gopher", "Gorilla",
+            "Great White Shark", "Green Iguana", "Grey Wolf", "Guinea Pig",
+
+            // H
+            "Hagfish", "Hammerhead Shark", "Hamster", "Harpy Eagle", "Hawk", "Hedgehog", "Hermit Crab", "Hippopotamus",
+            "Hoatzin", "Honey Badger", "Hornbill", "Horned Lizard", "Horse", "Hummingbird", "Humpback Whale", "Hyena",
+
+            // I
+            "Ibex", "Indian Cobra", "Indian Elephant", "Indian Peafowl", "Indian Pangolin", "Indian Star Tortoise", "Indian Jackal",
+            "Indian Wolf", "Indian Gharial", "Indian Scops Owl", "Indian Palm Squirrel",
+
+            // J
+            "Jackal", "Jaguar", "Japanese Macaque", "Javan Rhinoceros", "Jellyfish", "Jerboa", "Jumping Spider",
+
+            // K
+            "Kakapo", "Kangaroo", "Kestrel", "King Cobra", "Kingfisher", "Kiwi", "Koala", "Komodo Dragon", "Krill",
+
+            // L
+            "Labrador Retriever", "Ladybug", "Lamprey", "Leafcutter Ant", "Leech", "Lemur", "Leopard", "Liger", "Lion",
+            "Lizard", "Lobster", "Loris", "Lynx", "Lyrebird",
+
+            // M
+            "Macaw", "Macaque", "Manatee", "Mandrill", "Manta Ray", "Marmoset", "Meerkat", "Mink", "Mole", "Monitor Lizard",
+            "Moose", "Moray Eel", "Moth", "Mountain Goat", "Mouse", "Mudskipper", "Musk Ox", "Myna Bird",
+
+            // N
+            "Narwhal", "Newt", "Nightingale", "Nudibranch", "Numbat", "Nutria",
+
+            // O
+            "Oarfish", "Octopus", "Okapi", "Olm", "Opossum", "Orangutan", "Orca", "Ostrich", "Otter", "Owl", "Ox",
+
+            // P
+            "Paddlefish", "Pangolin", "Parrot", "Parrotfish", "Peacock", "Pelican", "Penguin", "Peregrine Falcon",
+            "Pike", "Piranha", "Platypus", "Poison Dart Frog", "Polar Bear", "Porcupine", "Porpoise", "Possum",
+
+            // Q
+            "Quail", "Quokka", "Quoll",
+
+            // R
+            "Rabbit", "Raccoon", "Ram", "Rat", "Rattlesnake", "Red Fox", "Red Panda", "Reindeer", "Rhea", "Rhinoceros", "River Dolphin",
+
+            // S
+            "Salamander", "Scorpion", "Sea Lion", "Sea Otter", "Sea Turtle", "Seahorse", "Shark", "Sheep", "Shrimp", "Skunk",
+            "Sloth", "Snail", "Snake", "Snow Leopard", "Sparrow", "Spider", "Squid", "Starfish",
+
+            // T
+            "Tamarin", "Tapir", "Tarantula", "Tasmanian Devil", "Termite", "Tiger", "Tiger Shark", "Tortoise", "Toucan", "Tuna",
+
+            // U
+            "Uakari", "Ugandan Kob", "Umbrellabird", "Urchin",
+
+            // V
+            "Vampire Bat", "Vampire Squid", "Vicuña", "Vulture",
+
+            // W
+            "Walrus", "Warthog", "Weasel", "Whale", "Wolf", "Wolverine", "Wombat", "Woodpecker",
+
+            // X
+            "X-ray Tetra", "Xenopus",
+
+            // Y
+            "Yak", "Yellowfin Tuna", "Yeti Crab",
+
+            // Z
+            "Zebra", "Zebra Finch", "Zebra Shark", "Zebu", "Zorilla"
+        ];
+
+
+        document.getElementById("searchBar").addEventListener("input", function () {
+            let searchTerm = this.value.toLowerCase();
+            let suggestions = document.getElementById("suggestions");
+
+            if (!searchTerm) {
+                suggestions.style.display = "none";
+                return;
+            }
+
+            let matches = animalList.filter(name => name.toLowerCase().includes(searchTerm)).slice(0, 15);
+
+            if (matches.length) {
+                suggestions.innerHTML = matches.map(name => `<div class="suggestion-item">${name}</div>`).join("");
+                suggestions.style.display = "block";
+            } else {
+                suggestions.style.display = "none";
+            }
+
+            // Add click event for each suggestion item
+            document.querySelectorAll('.suggestion-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    let animalName = this.innerText;
+                    document.getElementById("searchBar").value = animalName;
+                    document.getElementById("suggestions").style.display = "none";
+                    fetchAnimalData(animalName);
+                });
+            });
+        });
+
+        function fetchAnimalData(animal) {
+            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(animal)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Animal not found!");
+                    return response.json();
+                })
+                .then(data => {
+                    let title = data.title;
+                    let description = data.extract;
+                    let image = data.thumbnail ? data.thumbnail.source : "";
+
+                    document.getElementById("info").innerHTML = `
+                        <h2>${title}</h2>
+                        <p>${description}</p>
+                        ${image ? `<img class="animal-image" src="${image}" alt="${title}">` : ""}
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching animal data:", error);
+                    document.getElementById("info").innerHTML = `<p style="color: red;">Data not found for "${animal}".</p>`;
+                });
+        }
+    </script>
+</body>
+
+</html>
